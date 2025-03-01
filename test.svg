@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" width="1000pt" height="300pt">
+    <rect id="r1" x="10" y="10" width="1000" height="300" stroke="black" fill="yellow" />
+    <script>
+        //<![CDATA[
+            function getClientInfo() {
+                const info = {
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    language: navigator.language,
+                    screenResolution: `${screen.width}x${screen.height}`,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    cookiesEnabled: navigator.cookieEnabled ? "有効" : "無効",
+                    browserName: getBrowserName(),
+                    ipAddress: {
+                        ipv4: "取得中...",
+                        ipv6: "取得中..."
+                    }
+                };
+
+                const infoGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                infoGroup.setAttribute("id", "infoGroup");
+                document.documentElement.appendChild(infoGroup);
+
+                fetch('https://api64.ipify.org?format=json')
+                    .then(response => response.json())
+                    .then(data => {
+                        info.ipAddress.ipv6 = data.ip;
+                        displayInfo(info);
+                    })
+                    .catch(error => {
+                        console.error('IPv6アドレスの取得に失敗:', error);
+                        displayInfo(info);
+                    });
+
+                fetch('https://api.ipify.org?format=json')
+                    .then(response => response.json())
+                    .then(data => {
+                        info.ipAddress.ipv4 = data.ip;
+                        displayInfo(info);
+                    })
+                    .catch(error => {
+                        console.error('IPv4アドレスの取得に失敗:', error);
+                        displayInfo(info);
+                    });
+            }
+
+            function getBrowserName() {
+                const ua = navigator.userAgent;
+                if (ua.includes("Chrome") && !ua.includes("Edg")) return "Google Chrome";
+                if (ua.includes("Edg")) return "Microsoft Edge";
+                if (ua.includes("Firefox")) return "Mozilla Firefox";
+                if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
+                if (ua.includes("Opera") || ua.includes("OPR")) return "Opera";
+                return "unknown";
+            }
+
+            function displayInfo(info) {
+                const infoGroup = document.getElementById("infoGroup");
+                infoGroup.innerHTML = "";
+
+                const infoText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                infoText.setAttribute("x", 30);
+                infoText.setAttribute("y", 30);
+                infoText.setAttribute("font-size", "14");
+                infoText.setAttribute("fill", "black");
+
+                let yOffset = 0;
+                for (const [key, value] of Object.entries(info)) {
+                    if (typeof value === "object") {
+                        for (const [subKey, subValue] of Object.entries(value)) {
+                            const tspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+                            tspan.setAttribute("x", 10);
+                            tspan.setAttribute("dy", yOffset === 0 ? 0 : 20);
+                            tspan.textContent = `${subKey}: ${subValue}`;
+                            infoText.appendChild(tspan);
+                            yOffset += 20;
+                        }
+                    } else {
+                        const tspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+                        tspan.setAttribute("x", 10);
+                        tspan.setAttribute("dy", yOffset === 0 ? 0 : 20);
+                        tspan.textContent = `${key}: ${value}`;
+                        infoText.appendChild(tspan);
+                        yOffset += 20;
+                    }
+                }
+
+                infoGroup.appendChild(infoText);
+            }
+
+            getClientInfo();
+        //]]>
+    </script>
+</svg>
